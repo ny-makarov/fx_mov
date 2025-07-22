@@ -1,4 +1,4 @@
-# FX Movement System (FX MOV)
+# FX Movement System
 
 ## English
 
