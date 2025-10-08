@@ -1,5 +1,5 @@
 ---MARK: VARIABLES
-inCrouch = false
+InCrouch = false
 
 ---MARK: FUNCTIONS
 function Crouch()
@@ -12,10 +12,10 @@ function Crouch()
     end
     
     if not IsPedInAnyVehicle(ped) then
-        if inCrouch then
+        if InCrouch then
             ResetPedMovementClipset(ped, Config.Crouch.TransitionSpeed)
             ResetPedStrafeClipset(ped)
-            inCrouch = false
+            InCrouch = false
             
             if wasInCombat and not Config.Crouch.DisableCombatMode then
                 SetPedUsingActionMode(ped, true, -1, "DEFAULT_ACTION")
@@ -25,7 +25,7 @@ function Crouch()
             RequestAnimSet(Config.Crouch.StrafingAnimationSet)
             SetPedMovementClipset(ped, Config.Crouch.AnimationSet, Config.Crouch.TransitionSpeed)
             SetPedStrafeClipset(ped, Config.Crouch.StrafingAnimationSet)
-            inCrouch = true 
+            InCrouch = true 
         end
     end
 end
@@ -33,7 +33,7 @@ end
 Citizen.CreateThread(function()
     while true do
         Citizen.Wait(0)
-        if inCrouch then
+        if InCrouch then    
             local ped = PlayerPedId()
             
             if Config.Crouch.DisableCombatMode and IsPedUsingActionMode(ped) then
@@ -84,3 +84,35 @@ Citizen.CreateThread(function()
         end
     end
 end)
+
+
+if Config.Sprint.UnlimitedSprint then
+    Citizen.CreateThread(function()
+        while true do
+            Citizen.Wait(0)
+            local ped = PlayerPedId()
+            if not IsPedInAnyVehicle(ped) then
+                ResetPlayerStamina(PlayerId())
+            end
+        end
+    end)
+end
+
+Citizen.CreateThread(function()
+    while true do
+        Citizen.Wait(0)
+        local ped = PlayerPedId()
+        if not IsPedInAnyVehicle(ped, false) then
+            if IsControlPressed(0, 21) then -- 21 = SHIFT
+                SetRunSprintMultiplierForPlayer(PlayerId(), Config.Sprint.TurboSpeed)
+                SetPedMoveRateOverride(ped, Config.Sprint.TurboSpeed)
+            else
+                SetRunSprintMultiplierForPlayer(PlayerId(), Config.Sprint.NormalSpeed)
+                SetPedMoveRateOverride(ped, Config.Sprint.NormalSpeed)
+            end
+        else
+            SetRunSprintMultiplierForPlayer(PlayerId(), Config.Sprint.WalkSpeed)
+        end
+    end
+end)
+
