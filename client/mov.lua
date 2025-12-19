@@ -11,7 +11,7 @@ function Crouch()
         SetPedUsingActionMode(ped, false, -1, "DEFAULT_ACTION")
     end
     
-    if not IsPedInAnyVehicle(ped) then
+    if not IsPedInAnyVehicle(ped, false) then
         if InCrouch then
             ResetPedMovementClipset(ped, Config.Crouch.TransitionSpeed)
             ResetPedStrafeClipset(ped)
@@ -91,7 +91,7 @@ if Config.Sprint.UnlimitedSprint then
         while true do
             Citizen.Wait(0)
             local ped = PlayerPedId()
-            if not IsPedInAnyVehicle(ped) then
+            if not IsPedInAnyVehicle(ped, false) then
                 ResetPlayerStamina(PlayerId())
             end
         end
@@ -103,13 +103,17 @@ Citizen.CreateThread(function()
         Citizen.Wait(0)
         local ped = PlayerPedId()
         if not IsPedInAnyVehicle(ped, false) then
-            if IsControlPressed(0, 21) then -- 21 = SHIFT
-                SetRunSprintMultiplierForPlayer(PlayerId(), Config.Sprint.TurboSpeed)
-                SetPedMoveRateOverride(ped, Config.Sprint.TurboSpeed)
-            else
-                SetRunSprintMultiplierForPlayer(PlayerId(), Config.Sprint.NormalSpeed)
-                SetPedMoveRateOverride(ped, Config.Sprint.NormalSpeed)
+            local speedToUse = Config.Sprint.NormalSpeed
+            
+            -- Verifica se há velocidade temporária ativa
+            if isTemporarySpeedActive and temporarySpeed > 0.0 then
+                speedToUse = temporarySpeed
+            elseif IsControlPressed(0, 21) then -- 21 = SHIFT
+                speedToUse = Config.Sprint.TurboSpeed
             end
+            
+            SetRunSprintMultiplierForPlayer(PlayerId(), speedToUse)
+            SetPedMoveRateOverride(ped, speedToUse)
         else
             SetRunSprintMultiplierForPlayer(PlayerId(), Config.Sprint.WalkSpeed)
         end
